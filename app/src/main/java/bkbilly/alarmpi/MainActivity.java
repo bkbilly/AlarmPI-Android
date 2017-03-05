@@ -1,6 +1,10 @@
 package bkbilly.alarmpi;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -32,14 +36,32 @@ public class MainActivity extends AppCompatActivity {
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private static FloatingActionButton fab;
     private static boolean alarmStatus;
+
+    public static String getCreatedURL() {
+        return createdURL;
+    }
+
+    private static String username;
+    private static String password;
+    private static String createdURL;
+    private static Context context;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
 
+    public static String getUsername() {
+        return username;
+    }
+
+    public static String getPassword() {
+        return password;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = getApplicationContext();
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -56,27 +78,44 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mViewPager);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
-        new getAlarmStatus().execute("https://spinet.asuscomm.com:5003/alertpins.json");
+        MainActivity.RefreshMe();
+
+//        new getAlarmStatus().execute(createdURL, "/alertpins.json");
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.e("fabResources", String.valueOf(fab.getResources()));
                 if (alarmStatus == false) {
-                    Snackbar.make(view, "Activating Alarm", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                    new getJSON().execute("https://spinet.asuscomm.com:5003/activateAlarmOnline");
+                    Snackbar.make(view, "Activating Alarm", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    new getAlarmStatus().execute(createdURL, "/activateAlarmOnline", MainActivity.getUsername(), MainActivity.getPassword());
                 } else {
-                    Snackbar.make(view, "Deactivating Alarm", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                    new getJSON().execute("https://spinet.asuscomm.com:5003/deactivateAlarmOnline");
+                    Snackbar.make(view, "Deactivating Alarm", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    new getAlarmStatus().execute(createdURL, "/deactivateAlarmOnline", MainActivity.getUsername(), MainActivity.getPassword());
                 }
-                new getAlarmStatus().execute("https://spinet.asuscomm.com:5003/alertpins.json");
+                new getAlarmStatus().execute(createdURL, "/alertpins.json", MainActivity.getUsername(), MainActivity.getPassword());
             }
         });
 
+
     }
     public static void RefreshMe(){
-        new getAlarmStatus().execute("https://spinet.asuscomm.com:5003/alertpins.json");
+        SharedPreferences prefs = context.getSharedPreferences("MyPrefsFile", MODE_PRIVATE);
+
+        username = prefs.getString("settingsUserName", null);
+        password = prefs.getString("settingsPassword", null);
+        String settingsURL = prefs.getString("settingsURL", null);
+        String settingsPort = prefs.getString("settingsPort", null);
+        boolean settingsHTTPS = prefs.getBoolean("settingsHTTPS", true);
+
+        String settingsHTTPstart;
+        if (settingsHTTPS == true){
+            settingsHTTPstart = "https://";
+        } else {
+            settingsHTTPstart = "http://";
+        }
+        createdURL = settingsHTTPstart + settingsURL + ":" + settingsPort;
+        Log.e("createdURL", createdURL);
+        new getAlarmStatus().execute(createdURL, "/alertpins.json", MainActivity.getUsername(), MainActivity.getPassword());
+
     }
 
     @Override
@@ -94,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 // User chose the "Settings" item, show the app settings UI...
-                Intent intent = new Intent(this, DisplayMessageActivity.class);
+                Intent intent = new Intent(this, settingsClass.class);
                 startActivity(intent);
                 return true;
 
@@ -165,14 +204,16 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(JSONObject response)
         {
             if(response != null) {
-                Log.e("App", "Success: " + response );
+                Log.w("MainActivity", "Success: " + response );
                 try {
                     alarmStatus = response.getBoolean("alarmArmed");
-                    Log.e("getAlarmStatus", "Success: " + alarmStatus );
+                    Log.w("getAlarmStatus", "Success: " + alarmStatus );
                     if (alarmStatus == false){
                         fab.setImageResource(R.drawable.ic_unlocked);
+                        fab.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF0000")));
                     } else {
                         fab.setImageResource(R.drawable.ic_locked);
+                        fab.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00CC00")));
                     }
 
                 } catch (JSONException e) {

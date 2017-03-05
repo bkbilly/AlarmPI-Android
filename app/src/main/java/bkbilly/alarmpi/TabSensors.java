@@ -51,7 +51,7 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
 
     public static void RefreshMe(){
         mSwipeRefreshLayout.setRefreshing(true);
-        new getAlarmStatus().execute("https://spinet.asuscomm.com:5003/alertpins.json");
+        new getAlarmStatus().execute(MainActivity.getCreatedURL(), "/alertpins.json", MainActivity.getUsername(), MainActivity.getPassword());
     }
 
     @Override
@@ -72,10 +72,9 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
             ListView myListView = (ListView) rootView.findViewById(R.id.sensors_list);
             myListView.setAdapter(null);
             if(response != null) {
-                Log.e("App", "Success: " + response );
                 try {
                     jsonData = response.getJSONArray("sensors");
-                    Log.e("App", "Success: " + jsonData );
+                    Log.w("TabLogs", "Success: " + jsonData );
 
                     for(int i=0; i<jsonData.length(); i++){
                         JSONObject jsonOBject = jsonData.getJSONObject(i);
@@ -114,7 +113,6 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
                 final JSONObject jsonOBject = jsonData.getJSONObject(position);
                 LinearLayout li=(LinearLayout) rowView.findViewById(R.id.list_sensor_div);
                 TextView txtTitle = (TextView) rowView.findViewById(R.id.txt);
-                Log.e("asdf", jsonOBject.getString("name"));
 
                 txtTitle.setText(jsonOBject.getString("name"));
 
@@ -135,8 +133,8 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
                             Integer pin = jsonOBject.getInt("pin");
                             boolean active = isChecked;
 
-                            Log.e("SWITCH", "name: " + jsonOBject.getString("name") + ", Pin: " + jsonOBject.getInt("pin") + " State: " + active);
-                            new getJSON().execute("https://spinet.asuscomm.com:5003/setSensorStateOnline?pin=" + pin +"&active=" + active);
+                            Log.w("SWITCH", "name: " + jsonOBject.getString("name") + ", Pin: " + jsonOBject.getInt("pin") + " State: " + active);
+                            new getJSON().execute(MainActivity.getCreatedURL(), "/setSensorStateOnline?pin=" + pin +"&active=" + active, MainActivity.getUsername(), MainActivity.getPassword());
                             RefreshMe();
                         } catch (JSONException e) {
                             e.printStackTrace();

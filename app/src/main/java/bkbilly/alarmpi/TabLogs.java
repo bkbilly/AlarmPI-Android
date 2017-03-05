@@ -44,7 +44,7 @@ public class TabLogs extends Fragment implements SwipeRefreshLayout.OnRefreshLis
     }
     public static void RefreshMe(){
         mSwipeRefreshLayout.setRefreshing(true);
-        new getLogs().execute("https://spinet.asuscomm.com:5003/sensorsLog.json?limit=100");
+        new getLogs().execute(MainActivity.getCreatedURL(), "/sensorsLog.json?limit=100", MainActivity.getUsername(), MainActivity.getPassword());
     }
 
     @Override
@@ -67,11 +67,10 @@ public class TabLogs extends Fragment implements SwipeRefreshLayout.OnRefreshLis
 
             JSONArray jsonData = new JSONArray();
             if(response != null) {
-                Log.e("App", "Success: " + response );
+                Log.w("TabLogs", "Success: " + response );
                 try {
                     jsonData = response.getJSONArray("log");
                     for(int i=0; i<jsonData.length(); i++){
-                        Log.e("App", "Succesds: " + jsonData.getString(i) );
                         myStringArray1.add(jsonData.getString(i));
                         adapter.notifyDataSetChanged();
                     }

@@ -56,77 +56,84 @@ public class getJSON extends AsyncTask<String, Void, JSONObject>
                     }
             };
 
-            URL url = new URL(urls[0]);
-            if(urls[0].toLowerCase().startsWith("https")){
-                String encoded = Base64.encodeToString("username:password".getBytes("UTF-8"), Base64.DEFAULT);
-                SSLContext sc = SSLContext.getInstance("SSL");
-                sc.init(null, trustAllCerts, new java.security.SecureRandom());
-                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-                HttpsURLConnection.setDefaultHostnameVerifier(DO_NOT_VERIFY);
+            Log.e("getJSON URL", urls[0] + urls[1]);
+            if (urls[0] != null) {
+                URL url = new URL(urls[0] + urls[1]);
+                if (urls[0].toLowerCase().startsWith("https")) {
+                    String userpass = urls[2] + ":" + urls[3];
+                    Log.e("getJSON USERPASS", userpass);
+                    String encoded = Base64.encodeToString(userpass.getBytes("UTF-8"), Base64.DEFAULT);
+                    SSLContext sc = SSLContext.getInstance("SSL");
+                    sc.init(null, trustAllCerts, new java.security.SecureRandom());
+                    HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+                    HttpsURLConnection.setDefaultHostnameVerifier(DO_NOT_VERIFY);
 
-                HttpsURLConnection myConnection  = (HttpsURLConnection) url.openConnection();
-                myConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-                myConnection.setRequestProperty("Authorization", "Basic "+encoded);
-                myConnection.setRequestProperty("Content-Type","0");
-                myConnection.setRequestMethod("GET");
-                myConnection.setUseCaches(false);
-                myConnection.setConnectTimeout(10000);
-                myConnection.setReadTimeout(10000);
-                myConnection.setAllowUserInteraction(false);
-                myConnection.setInstanceFollowRedirects(true);
-                myConnection.connect();
-                int status = myConnection.getResponseCode();
+                    HttpsURLConnection myConnection = (HttpsURLConnection) url.openConnection();
+                    myConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+                    myConnection.setRequestProperty("Authorization", "Basic " + encoded);
+                    myConnection.setRequestProperty("Content-Type", "0");
+                    myConnection.setRequestMethod("GET");
+                    myConnection.setUseCaches(false);
+                    myConnection.setConnectTimeout(5000);
+                    myConnection.setReadTimeout(5000);
+                    myConnection.setAllowUserInteraction(false);
+                    myConnection.setInstanceFollowRedirects(true);
+                    myConnection.connect();
+                    int status = myConnection.getResponseCode();
 
-                switch (status) {
-                    case 200:
-                    case 201:
-                        BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
-                        StringBuilder sb = new StringBuilder();
-                        String line;
-                        while ((line = br.readLine()) != null) {
-                            sb.append(line+"\n");
-                        }
-                        br.close();
-                        json = sb.toString();
-                        try {
-                            jObj = new JSONObject(json);
-                        } catch (JSONException ex) {
-                            Log.e("App", "Not JSON Data: " + url);
-                        }
+                    switch (status) {
+                        case 200:
+                        case 201:
+                            BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                            StringBuilder sb = new StringBuilder();
+                            String line;
+                            while ((line = br.readLine()) != null) {
+                                sb.append(line + "\n");
+                            }
+                            br.close();
+                            json = sb.toString();
+                            try {
+                                jObj = new JSONObject(json);
+                            } catch (JSONException ex) {
+                                Log.e("getJSON", "Not JSON Data: " + url);
+                            }
+                    }
+                } else {
+                    HttpURLConnection myConnection = (HttpURLConnection) url.openConnection();
+                    myConnection.setRequestProperty("Content-Type", "0");
+                    myConnection.setRequestMethod("GET");
+                    myConnection.setUseCaches(false);
+                    myConnection.setConnectTimeout(5000);
+                    myConnection.setReadTimeout(5000);
+                    myConnection.setAllowUserInteraction(false);
+                    myConnection.setInstanceFollowRedirects(true);
+                    myConnection.connect();
+                    int status = myConnection.getResponseCode();
+
+                    switch (status) {
+                        case 200:
+                        case 201:
+                            BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                            StringBuilder sb = new StringBuilder();
+                            String line;
+                            while ((line = br.readLine()) != null) {
+                                sb.append(line + "\n");
+                            }
+                            br.close();
+                            json = sb.toString();
+                            try {
+                                jObj = new JSONObject(json);
+                            } catch (JSONException ex) {
+                                Log.e("getJSON", "Not JSON Data: " + url);
+                            }
+                    }
                 }
             } else {
-                HttpURLConnection myConnection  = (HttpURLConnection) url.openConnection();
-                myConnection.setRequestProperty("Content-Type","0");
-                myConnection.setRequestMethod("GET");
-                myConnection.setUseCaches(false);
-                myConnection.setConnectTimeout(10000);
-                myConnection.setReadTimeout(10000);
-                myConnection.setAllowUserInteraction(false);
-                myConnection.setInstanceFollowRedirects(true);
-                myConnection.connect();
-                int status = myConnection.getResponseCode();
-
-                switch (status) {
-                    case 200:
-                    case 201:
-                        BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
-                        StringBuilder sb = new StringBuilder();
-                        String line;
-                        while ((line = br.readLine()) != null) {
-                            sb.append(line+"\n");
-                        }
-                        br.close();
-                        json = sb.toString();
-                        try {
-                            jObj = new JSONObject(json);
-                        } catch (JSONException ex) {
-                            Log.e("App", "Not JSON Data: " + url);
-                        }
-                }
+                Log.e("getJSON", "Empty URL");
             }
             return jObj;
         } catch(Exception ex) {
-            Log.e("App", "getJSON", ex);
+            Log.e("getJSON", "getJSON", ex);
             return null;
         } finally {
             if(bufferedReader != null) {
@@ -143,7 +150,7 @@ public class getJSON extends AsyncTask<String, Void, JSONObject>
     protected void onPostExecute(JSONObject response)
     {
 //            if(response != null) {
-        Log.e("App", "Success: " + response );
+        Log.w("getJSON", "Success: " + response );
 //            }
     }
 }
