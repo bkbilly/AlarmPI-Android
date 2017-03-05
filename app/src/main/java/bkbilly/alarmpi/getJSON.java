@@ -92,7 +92,7 @@ public class getJSON extends AsyncTask<String, Void, JSONObject>
                             jObj = new JSONObject(json);
                         } catch (JSONException ex) {
                             Log.e("App", "Not JSON Data: " + url);
-                        };
+                        }
                 }
             } else {
                 HttpURLConnection myConnection  = (HttpURLConnection) url.openConnection();
@@ -121,7 +121,7 @@ public class getJSON extends AsyncTask<String, Void, JSONObject>
                             jObj = new JSONObject(json);
                         } catch (JSONException ex) {
                             Log.e("App", "Not JSON Data: " + url);
-                        };
+                        }
                 }
             }
             return jObj;

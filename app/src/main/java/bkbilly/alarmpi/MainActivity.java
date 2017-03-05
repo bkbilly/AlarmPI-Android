@@ -1,23 +1,23 @@
 package bkbilly.alarmpi;
 
-import android.support.design.widget.TabLayout;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 
-import android.widget.TextView;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
-
+    private static FloatingActionButton fab;
+    private static boolean alarmStatus;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -54,17 +55,29 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        new getAlarmStatus().execute("https://spinet.asuscomm.com:5003/alertpins.json");
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Log.e("fabResources", String.valueOf(fab.getResources()));
+                if (alarmStatus == false) {
+                    Snackbar.make(view, "Activating Alarm", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    new getJSON().execute("https://spinet.asuscomm.com:5003/activateAlarmOnline");
+                } else {
+                    Snackbar.make(view, "Deactivating Alarm", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    new getJSON().execute("https://spinet.asuscomm.com:5003/deactivateAlarmOnline");
+                }
+                new getAlarmStatus().execute("https://spinet.asuscomm.com:5003/alertpins.json");
             }
         });
 
     }
-
+    public static void RefreshMe(){
+        new getAlarmStatus().execute("https://spinet.asuscomm.com:5003/alertpins.json");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -78,14 +91,26 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                Intent intent = new Intent(this, DisplayMessageActivity.class);
+                startActivity(intent);
+                return true;
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+            case R.id.menu_refresh:
+                TabLogs.RefreshMe();
+                TabSensors.RefreshMe();
+                MainActivity.RefreshMe();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
         }
 
-        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -107,14 +132,11 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    Tab1 tab1 = new Tab1();
-                    return tab1;
+                    TabSensors tabSensors = new TabSensors();
+                    return tabSensors;
                 case 1:
-                    Tab2 tab2 = new Tab2();
-                    return tab2;
-                case 2:
-                    Tab3 tab3 = new Tab3();
-                    return tab3;
+                    TabLogs tabLogs = new TabLogs();
+                    return tabLogs;
                 default:
                     return null;
             }
@@ -123,20 +145,41 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 3;
+            return 2;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Control";
-                case 1:
                     return "Sensors";
-                case 2:
+                case 1:
                     return "Logs";
             }
             return null;
         }
     }
+    public static class getAlarmStatus extends getJSON
+    {
+        @Override
+        protected void onPostExecute(JSONObject response)
+        {
+            if(response != null) {
+                Log.e("App", "Success: " + response );
+                try {
+                    alarmStatus = response.getBoolean("alarmArmed");
+                    Log.e("getAlarmStatus", "Success: " + alarmStatus );
+                    if (alarmStatus == false){
+                        fab.setImageResource(R.drawable.ic_unlocked);
+                    } else {
+                        fab.setImageResource(R.drawable.ic_locked);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 }
