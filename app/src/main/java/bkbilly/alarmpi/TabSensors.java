@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 /**
@@ -68,24 +69,38 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
         {
             mSwipeRefreshLayout.setRefreshing(true);
             ArrayList<String> myStringArray1 = new ArrayList<String>();
-            JSONArray jsonData = new JSONArray();
+            JSONObject jsonData = new JSONObject();
+            JSONArray jsonDataArray = new JSONArray();
             ListView myListView = (ListView) rootView.findViewById(R.id.sensors_list);
             myListView.setAdapter(null);
             if(response != null) {
                 try {
-                    jsonData = response.getJSONArray("sensors");
+                    Log.w("test", "Success: " + response );
+                    jsonData = response.getJSONObject("sensors");
                     Log.w("TabLogs", "Success: " + jsonData );
-
-                    for(int i=0; i<jsonData.length(); i++){
-                        JSONObject jsonOBject = jsonData.getJSONObject(i);
+                    Log.e("test", "--------------------------");
+                    Iterator<String> keys = jsonData.keys();
+//                    for(int i=0; i<keys.length(); i++){
+                    while(keys.hasNext()){
+                        JSONObject obj = new JSONObject();
+                        String sensor = (String)keys.next();
+                        Log.e("test", "Successsssssss: " + jsonData );
+                        JSONObject jsonOBject = jsonData.getJSONObject(sensor);
                         myStringArray1.add(jsonOBject.getString("name"));
+
+                        obj.put("pin", sensor);
+                        obj.put("active", jsonOBject.getBoolean("active"));
+                        obj.put("name", jsonOBject.getString("name"));
+                        obj.put("alert", jsonOBject.getBoolean("alert"));
+                        jsonDataArray.put(obj);
                     }
+                    Log.e("test", "--------------------------");
                     // Start
                     myListView = (ListView) rootView.findViewById(R.id.sensors_list);
-                    CustomList adapter = new CustomList(context, myStringArray1, jsonData);
+                    CustomList adapter = new CustomList(context, myStringArray1, jsonDataArray);
                     myListView.setAdapter(adapter);
                     // END...
-                    //adapter.notifyDataSetChanged();
+                    adapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
