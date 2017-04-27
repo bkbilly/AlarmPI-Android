@@ -52,7 +52,7 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
 
     public static void RefreshMe(){
         mSwipeRefreshLayout.setRefreshing(true);
-        new getAlarmStatus().execute(MainActivity.getCreatedURL(), "/alertpins.json", MainActivity.getUsername(), MainActivity.getPassword());
+        new getAlarmStatus().execute(MainActivity.getCreatedURL(), "/getSensors.json", MainActivity.getUsername(), MainActivity.getPassword());
     }
 
     @Override

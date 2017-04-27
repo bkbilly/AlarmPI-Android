@@ -44,7 +44,7 @@ public class TabLogs extends Fragment implements SwipeRefreshLayout.OnRefreshLis
     }
     public static void RefreshMe(){
         mSwipeRefreshLayout.setRefreshing(true);
-        new getLogs().execute(MainActivity.getCreatedURL(), "/sensorsLog.json?limit=100", MainActivity.getUsername(), MainActivity.getPassword());
+        new getLogs().execute(MainActivity.getCreatedURL(), "/getSensorsLog.json?limit=100", MainActivity.getUsername(), MainActivity.getPassword());
     }
 
     @Override

@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         fab = (FloatingActionButton) findViewById(R.id.fab);
         MainActivity.RefreshMe();
 
-//        new getAlarmStatus().execute(createdURL, "/alertpins.json");
+//        new getAlarmStatus().execute(createdURL, "/getSensorsLog.json");
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                     Snackbar.make(view, "Deactivating Alarm", Snackbar.LENGTH_LONG).setAction("Action", null).show();
                     new getAlarmStatus().execute(createdURL, "/deactivateAlarmOnline", MainActivity.getUsername(), MainActivity.getPassword());
                 }
-                new getAlarmStatus().execute(createdURL, "/alertpins.json", MainActivity.getUsername(), MainActivity.getPassword());
+                new getAlarmStatus().execute(createdURL, "/getSensors.json", MainActivity.getUsername(), MainActivity.getPassword());
             }
         });
 
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         }
         createdURL = settingsHTTPstart + settingsURL + ":" + settingsPort;
         Log.e("createdURL", createdURL);
-        new getAlarmStatus().execute(createdURL, "/alertpins.json", MainActivity.getUsername(), MainActivity.getPassword());
+        new getAlarmStatus().execute(createdURL, "/getSensors.json", MainActivity.getUsername(), MainActivity.getPassword());
 
     }
 
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.w("MainActivity", "Success: " + response );
                 try {
                     alarmStatus = response.getBoolean("alarmArmed");
-                    Log.w("getAlarmStatus", "Success: " + alarmStatus );
+                    Log.w("getAlarmStatus", "Succccess: " + alarmStatus );
                     if (alarmStatus == false){
                         fab.setImageResource(R.drawable.ic_unlocked);
                         fab.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF0000")));
