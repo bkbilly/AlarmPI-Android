@@ -88,7 +88,7 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
                         JSONObject jsonOBject = jsonData.getJSONObject(sensor);
                         myStringArray1.add(jsonOBject.getString("name"));
 
-                        obj.put("pin", sensor);
+                        obj.put("sensor", sensor);
                         obj.put("active", jsonOBject.getBoolean("active"));
                         obj.put("name", jsonOBject.getString("name"));
                         obj.put("alert", jsonOBject.getBoolean("alert"));
@@ -145,11 +145,11 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         mSwipeRefreshLayout.setRefreshing(true);
                         try {
-                            Integer pin = jsonOBject.getInt("pin");
+                            String sensorName = jsonOBject.getString("sensor");
                             boolean active = isChecked;
 
-                            Log.w("SWITCH", "name: " + jsonOBject.getString("name") + ", Pin: " + jsonOBject.getInt("pin") + " State: " + active);
-                            new getJSON().execute(MainActivity.getCreatedURL(), "/setSensorStateOnline?pin=" + pin +"&active=" + active, MainActivity.getUsername(), MainActivity.getPassword());
+                            Log.w("SWITCH", "name: " + jsonOBject.getString("name") + ", Sensor: " + sensorName + " State: " + active);
+                            new getJSON().execute(MainActivity.getCreatedURL(), "/setSensorStateOnline?sensor=" + sensorName +"&active=" + active, MainActivity.getUsername(), MainActivity.getPassword());
                             RefreshMe();
                         } catch (JSONException e) {
                             e.printStackTrace();
