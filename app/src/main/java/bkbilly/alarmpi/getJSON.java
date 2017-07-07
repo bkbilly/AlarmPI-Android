@@ -1,6 +1,7 @@
 package bkbilly.alarmpi;
 
 import android.os.AsyncTask;
+import android.support.design.widget.Snackbar;
 import android.util.Base64;
 import android.util.Log;
 
@@ -32,10 +33,11 @@ public class getJSON extends AsyncTask<String, Void, JSONObject>
     {
         JSONObject jObj = null;
         String json = "";
+        int status = 0;
+        BufferedReader br = null;
         HttpURLConnection c = null;
         BufferedReader bufferedReader = null;
-        try
-        {
+        try {
             HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
                 @Override
                 public boolean verify(String hostname, SSLSession session) {
@@ -56,84 +58,92 @@ public class getJSON extends AsyncTask<String, Void, JSONObject>
                     }
             };
 
-            Log.e("getJSON URL", urls[0] + urls[1]);
+            Log.w("getJSON URL", urls[0] + urls[1]);
             if (urls[0] != null) {
                 URL url = new URL(urls[0] + urls[1]);
+                String userpass = urls[2] + ":" + urls[3];
+                Log.w("getJSON", "UserPass: " + userpass);
                 if (urls[0].toLowerCase().startsWith("https")) {
-                    String userpass = urls[2] + ":" + urls[3];
-                    Log.e("getJSON USERPASS", userpass);
-                    String encoded = Base64.encodeToString(userpass.getBytes("UTF-8"), Base64.DEFAULT);
-                    SSLContext sc = SSLContext.getInstance("SSL");
-                    sc.init(null, trustAllCerts, new java.security.SecureRandom());
-                    HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-                    HttpsURLConnection.setDefaultHostnameVerifier(DO_NOT_VERIFY);
+                    try {
+                        HttpsURLConnection myConnection = (HttpsURLConnection) url.openConnection();
+                        SSLContext sc = SSLContext.getInstance("SSL");
+                        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+                        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+                        HttpsURLConnection.setDefaultHostnameVerifier(DO_NOT_VERIFY);
+                        myConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
-                    HttpsURLConnection myConnection = (HttpsURLConnection) url.openConnection();
-                    myConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-                    myConnection.setRequestProperty("Authorization", "Basic " + encoded);
-                    myConnection.setRequestProperty("Content-Type", "0");
-                    myConnection.setRequestMethod("GET");
-                    myConnection.setUseCaches(false);
-                    myConnection.setConnectTimeout(5000);
-                    myConnection.setReadTimeout(5000);
-                    myConnection.setAllowUserInteraction(false);
-                    myConnection.setInstanceFollowRedirects(true);
-                    myConnection.connect();
-                    int status = myConnection.getResponseCode();
+                        String encoded = Base64.encodeToString(userpass.getBytes("UTF-8"), Base64.DEFAULT);
+                        myConnection.setRequestProperty("Authorization", "Basic " + encoded);
+                        myConnection.setRequestProperty("Content-Type", "0");
+                        myConnection.setRequestMethod("GET");
+                        myConnection.setUseCaches(false);
+                        myConnection.setConnectTimeout(5000);
+                        myConnection.setReadTimeout(5000);
+                        myConnection.setAllowUserInteraction(false);
+                        myConnection.setInstanceFollowRedirects(true);
 
-                    switch (status) {
-                        case 200:
-                        case 201:
-                            BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
-                            StringBuilder sb = new StringBuilder();
-                            String line;
-                            while ((line = br.readLine()) != null) {
-                                sb.append(line + "\n");
-                            }
-                            br.close();
-                            json = sb.toString();
-                            try {
-                                jObj = new JSONObject(json);
-                            } catch (JSONException ex) {
-                                Log.e("getJSON", "Not JSON Data: " + url);
-                            }
+                        myConnection.connect();
+                        status = myConnection.getResponseCode();
+                        switch (status) {
+                            case 200:
+                            case 201:
+                                br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                        }
+                    } catch (java.net.SocketTimeoutException e) {
+                        Log.e("GetJSON", "Timeout");
                     }
                 } else {
-                    HttpURLConnection myConnection = (HttpURLConnection) url.openConnection();
-                    myConnection.setRequestProperty("Content-Type", "0");
-                    myConnection.setRequestMethod("GET");
-                    myConnection.setUseCaches(false);
-                    myConnection.setConnectTimeout(5000);
-                    myConnection.setReadTimeout(5000);
-                    myConnection.setAllowUserInteraction(false);
-                    myConnection.setInstanceFollowRedirects(true);
-                    myConnection.connect();
-                    int status = myConnection.getResponseCode();
+                    try {
+                        HttpURLConnection myConnection = (HttpURLConnection) url.openConnection();
 
-                    switch (status) {
-                        case 200:
-                        case 201:
-                            BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
-                            StringBuilder sb = new StringBuilder();
-                            String line;
+                        String encoded = Base64.encodeToString(userpass.getBytes("UTF-8"), Base64.DEFAULT);
+                        myConnection.setRequestProperty("Authorization", "Basic " + encoded);
+                        myConnection.setRequestProperty("Content-Type", "0");
+                        myConnection.setRequestMethod("GET");
+                        myConnection.setUseCaches(false);
+                        myConnection.setConnectTimeout(5000);
+                        myConnection.setReadTimeout(5000);
+                        myConnection.setAllowUserInteraction(false);
+                        myConnection.setInstanceFollowRedirects(true);
+
+                        myConnection.connect();
+                        status = myConnection.getResponseCode();
+                        switch (status) {
+                            case 200:
+                            case 201:
+                                br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                        }
+                    } catch (java.net.SocketTimeoutException e) {
+                        Log.e("GetJSON", "Timeout");
+                    }
+                }
+                Log.w("getJSON", "Status: " + String.valueOf(status));
+                switch (status) {
+                    case 201:
+                    case 200:
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        if (br != null) {
                             while ((line = br.readLine()) != null) {
                                 sb.append(line + "\n");
                             }
                             br.close();
-                            json = sb.toString();
-                            try {
-                                jObj = new JSONObject(json);
-                            } catch (JSONException ex) {
-                                Log.e("getJSON", "Not JSON Data: " + url);
-                            }
-                    }
+                        }
+                        json = sb.toString();
+                        try {
+                            jObj = new JSONObject(json);
+                        } catch (JSONException ex) {
+                            Log.e("getJSON", "Not JSON Data: " + url);
+                        }
+                    case 401:
+                        Log.e("getJSON", "Wrong Authentication");
                 }
             } else {
                 Log.e("getJSON", "Empty URL");
             }
             return jObj;
         } catch(Exception ex) {
-            Log.e("getJSON", "getJSON", ex);
+            Log.e("getJSON", "Wrong URL");
             return null;
         } finally {
             if(bufferedReader != null) {
@@ -149,8 +159,6 @@ public class getJSON extends AsyncTask<String, Void, JSONObject>
     @Override
     protected void onPostExecute(JSONObject response)
     {
-//            if(response != null) {
         Log.w("getJSON", "Success: " + response );
-//            }
     }
 }
