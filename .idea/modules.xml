@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AlarmPI-Android.iml" filepath="$PROJECT_DIR$/AlarmPI-Android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/AlarmPi.iml" filepath="$PROJECT_DIR$/AlarmPi.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

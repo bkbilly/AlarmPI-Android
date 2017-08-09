@@ -89,9 +89,10 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
                         myStringArray1.add(jsonOBject.getString("name"));
 
                         obj.put("sensor", sensor);
-                        obj.put("active", jsonOBject.getBoolean("active"));
+                        obj.put("active", jsonOBject.getBoolean("enabled"));
                         obj.put("name", jsonOBject.getString("name"));
                         obj.put("alert", jsonOBject.getBoolean("alert"));
+                        obj.put("online", jsonOBject.getBoolean("online"));
                         jsonDataArray.put(obj);
                     }
                     Log.e("test", "--------------------------");
@@ -133,7 +134,9 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
 
                 Switch myswitch = (Switch) rowView.findViewById(R.id.switch1);
                 myswitch.setChecked(jsonOBject.getBoolean("active"));
-                if (jsonOBject.getBoolean("active") == false){
+                if (jsonOBject.getBoolean("online") == false){
+                    li.setBackgroundResource(R.drawable.bg_sensor_offline);
+                } else if (jsonOBject.getBoolean("active") == false){
                     li.setBackgroundResource(R.drawable.bg_sensor_inactive);
                 } else if (jsonOBject.getBoolean("alert") == true){
                     li.setBackgroundResource(R.drawable.bg_sensor_alert);
@@ -149,7 +152,7 @@ public class TabSensors extends Fragment implements SwipeRefreshLayout.OnRefresh
                             boolean active = isChecked;
 
                             Log.w("SWITCH", "name: " + jsonOBject.getString("name") + ", Sensor: " + sensorName + " State: " + active);
-                            new getJSON().execute(MainActivity.getCreatedURL(), "/setSensorStateOnline?sensor=" + sensorName +"&active=" + active, MainActivity.getUsername(), MainActivity.getPassword());
+                            new getJSON().execute(MainActivity.getCreatedURL(), "/setSensorStateOnline?sensor=" + sensorName +"&enabled=" + active, MainActivity.getUsername(), MainActivity.getPassword());
                             RefreshMe();
                         } catch (JSONException e) {
                             e.printStackTrace();
